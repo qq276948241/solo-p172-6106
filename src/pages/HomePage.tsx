@@ -1,24 +1,28 @@
+import { useMemo } from "react";
 import { Star, Plus, Filter } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCoffeeStore } from "@/store/coffeeStore";
+import { useShopFilter } from "@/hooks/useShopFilter";
 import CoffeeCard from "@/components/CoffeeCard";
 import FilterBar from "@/components/FilterBar";
 import { cn } from "@/lib/utils";
 
 export default function HomePage() {
-  const { shops, filterFavoritesOnly, toggleFilter, getFilteredShops } =
-    useCoffeeStore();
+  const { shops, filterFavoritesOnly, toggleFilter } = useCoffeeStore();
+  const shopFilter = useShopFilter();
+  const { filteredShops, hasActiveFilters } = shopFilter;
 
-  const filteredShops = getFilteredShops();
-
-  const leftColumn = filteredShops.filter((_, i) => i % 2 === 0);
-  const rightColumn = filteredShops.filter((_, i) => i % 2 === 1);
-
-  const hasActiveFilters = filteredShops.length !== shops.length;
+  const leftColumn = useMemo(
+    () => filteredShops.filter((_, i) => i % 2 === 0),
+    [filteredShops]
+  );
+  const rightColumn = useMemo(
+    () => filteredShops.filter((_, i) => i % 2 === 1),
+    [filteredShops]
+  );
 
   return (
     <div className="app-container animate-fade-in">
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/90 backdrop-blur-md px-5 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <div>
@@ -70,18 +74,16 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Filter Bar */}
         <div className="mt-4">
-          <FilterBar />
+          <FilterBar shopFilter={shopFilter} />
         </div>
       </header>
 
-      {/* Content */}
       <main className="px-4">
         {filteredShops.length === 0 ? (
           <EmptyState
             filterOn={filterFavoritesOnly}
-            hasSearch={hasActiveFilters}
+            hasActiveFilters={hasActiveFilters}
           />
         ) : (
           <div
@@ -107,12 +109,12 @@ export default function HomePage() {
 
 function EmptyState({
   filterOn,
-  hasSearch,
+  hasActiveFilters,
 }: {
   filterOn: boolean;
-  hasSearch: boolean;
+  hasActiveFilters: boolean;
 }) {
-  if (hasSearch) {
+  if (hasActiveFilters) {
     return (
       <div className="flex flex-col items-center justify-center py-20 px-4 text-center animate-fade-in">
         <div className="w-24 h-24 rounded-full bg-mocha-500/15 flex items-center justify-center mb-5">

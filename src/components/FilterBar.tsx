@@ -1,23 +1,25 @@
 import { Search, ChevronDown } from "lucide-react";
-import { useCoffeeStore } from "@/store/coffeeStore";
+import type { UseShopFilterReturn } from "@/hooks/useShopFilter";
 import { cn } from "@/lib/utils";
 
-export default function FilterBar() {
+interface FilterBarProps {
+  shopFilter: UseShopFilterReturn;
+}
+
+export default function FilterBar({ shopFilter }: FilterBarProps) {
   const {
-    searchQuery,
-    sortRating,
-    filterCity,
+    filter,
     setSearchQuery,
     setSortRating,
     setFilterCity,
-    getCities,
-  } = useCoffeeStore();
+    clearAllFilters,
+    cities,
+  } = shopFilter;
 
-  const cities = getCities();
+  const { searchQuery, sortRating, filterCity } = filter;
 
   return (
     <div className="space-y-3 animate-fade-in">
-      {/* Search Box */}
       <div className="relative">
         <Search
           size={16}
@@ -56,9 +58,7 @@ export default function FilterBar() {
         )}
       </div>
 
-      {/* Filter Row */}
       <div className="flex gap-2">
-        {/* Rating Sort */}
         <div className="relative flex-1">
           <select
             value={sortRating ?? ""}
@@ -84,7 +84,6 @@ export default function FilterBar() {
           />
         </div>
 
-        {/* City Filter */}
         <div className="relative flex-1">
           <select
             value={filterCity}
@@ -109,33 +108,19 @@ export default function FilterBar() {
         </div>
       </div>
 
-      {/* Active Chips */}
       {(searchQuery || sortRating !== null || filterCity) && (
         <div className="flex flex-wrap items-center gap-2 pt-1">
           {searchQuery && (
-            <Chip
-              label={`搜索: ${searchQuery}`}
-              onClear={() => setSearchQuery("")}
-            />
+            <Chip label={`搜索: ${searchQuery}`} onClear={() => setSearchQuery("")} />
           )}
           {sortRating !== null && (
-            <Chip
-              label={`${sortRating}星`}
-              onClear={() => setSortRating(null)}
-            />
+            <Chip label={`${sortRating}星`} onClear={() => setSortRating(null)} />
           )}
           {filterCity && (
-            <Chip
-              label={filterCity}
-              onClear={() => setFilterCity("")}
-            />
+            <Chip label={filterCity} onClear={() => setFilterCity("")} />
           )}
           <button
-            onClick={() => {
-              setSearchQuery("");
-              setSortRating(null);
-              setFilterCity("");
-            }}
+            onClick={clearAllFilters}
             className="text-xs text-mocha-500 hover:text-coffee-900 underline underline-offset-2 py-1"
           >
             清除全部
@@ -162,10 +147,7 @@ function Chip({
       )}
     >
       {label}
-      <button
-        onClick={onClear}
-        className="hover:text-coffee-900 transition-colors"
-      >
+      <button onClick={onClear} className="hover:text-coffee-900 transition-colors">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
